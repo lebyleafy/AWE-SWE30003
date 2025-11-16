@@ -68,7 +68,7 @@ export default function Navbar() {
               About
             </Link>
             <Link href="/sign-in" onClick={() => setIsOpen(false)}>
-              sign-in
+              Sign in
             </Link>
           </div>
         </div>

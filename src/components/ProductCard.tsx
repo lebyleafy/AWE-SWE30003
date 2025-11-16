@@ -1,39 +1,19 @@
-import Image from "next/image";
 import Link from "next/link";
+import { Product } from "@prisma/client";
 
-// Props type definition
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-}
-
-interface ProductCardProps {
-  product: Product;
-}
-
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product }: { product: Product }) {
   return (
-    <div className="bg-white border rounded-xl shadow hover:shadow-lg transition overflow-hidden">
-      <div className="relative w-full h-48">
-        <Image
-          src={product.image}
+    <Link href={`/products/${product.id}`}>
+      <div className="border rounded-lg shadow hover:shadow-lg transition p-4 cursor-pointer">
+        <img
+          src={product.imageUrl}
           alt={product.name}
-          fill
-          className="object-cover"
+          className="w-full h-48 object-cover rounded-md mb-4"
         />
+        <h2 className="text-lg font-semibold">{product.name}</h2>
+        <p className="text-gray-600 text-sm">{product.category}</p>
+        <p className="font-bold mt-2">${product.price.toFixed(2)}</p>
       </div>
-      <div className="p-4">
-        <h3 className="text-lg font-semibold">{product.name}</h3>
-        <p className="text-blue-600 font-bold mt-1">${product.price}</p>
-        <Link
-          href={`/products/${product.id}`}
-          className="inline-block mt-3 w-full bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          View Details
-        </Link>
-      </div>
-    </div>
+    </Link>
   );
 }

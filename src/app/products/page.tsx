@@ -1,48 +1,42 @@
-import ProductCard from "@/components/ProductCard";
+import { PrismaClient } from '@prisma/client';
+import Link from 'next/link';
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  category: string;
-}
+const prisma = new PrismaClient();
 
-export default function ProductsPage() {
-  // Temporary data — later you’ll fetch from Prisma/PostgreSQL
-  const products: Product[] = [
-    { id: 1, name: "Wireless Headphones", price: 199, image: "/images/headphones.jpg", category: "Audio" },
-    { id: 2, name: "Smartwatch Pro", price: 299, image: "/images/smartwatch.jpg", category: "Wearables" },
-    { id: 3, name: "Gaming Laptop", price: 1299, image: "/images/laptop.jpg", category: "Laptops" },
-    { id: 4, name: "4K Monitor", price: 499, image: "/images/monitor.jpg", category: "Displays" },
-    { id: 5, name: "Wireless Mouse", price: 49, image: "/images/mouse.jpg", category: "Accessories" },
-    { id: 6, name: "Mechanical Keyboard", price: 89, image: "/images/keyboard.jpg", category: "Accessories" },
-  ];
+export default async function ProductsPage() {
+  // Fetch data directly from Prisma
+  const products = await prisma.product.findMany();
 
   return (
-    <section className="container mx-auto px-4 py-12">
-      <h1 className="text-4xl font-bold text-center mb-12">All Products</h1>
+    <section className="max-w-6xl mx-auto px-6 py-16 text-center space-y-8">
+      <h1 className="text-4xl font-bold text-blue-600">All Products 🛍️</h1>
 
-      {/* Filter/Search bar placeholder */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
-        <input
-          type="text"
-          placeholder="Search products..."
-          className="w-full sm:w-1/3 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 outline-none"
-        />
-        <select className="w-full sm:w-1/5 px-3 py-2 border border-gray-300 rounded-md">
-          <option>All Categories</option>
-          <option>Laptops</option>
-          <option>Audio</option>
-          <option>Wearables</option>
-          <option>Accessories</option>
-        </select>
-      </div>
+      <p className="text-gray-700 max-w-2xl mx-auto">
+        Browse all high-quality electronics available in our store.
+      </p>
 
-      {/* Products grid */}
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
+        {products.map((product) => (
+          <Link 
+            href={`/products/${product.id}`} 
+            key={product.id}
+            className="border rounded-lg shadow hover:shadow-lg transition p-4 flex flex-col cursor-pointer"
+          >
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="w-full h-48 object-cover rounded-md mb-4"
+            />
+
+            <h2 className="text-lg font-semibold mb-1">{product.name}</h2>
+
+            {product.description && (
+              <p className="text-gray-600 mb-2">{product.description}</p>
+            )}
+
+            <p className="font-bold mb-1">${product.price.toFixed(2)}</p>
+            <p className="text-sm text-gray-500">{product.category}</p>
+          </Link>
         ))}
       </div>
     </section>

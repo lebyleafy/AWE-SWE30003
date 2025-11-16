@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "src/components/Footer.tsx", "src/components/NavBar.tsx"  ],
+, "src/components/Footer.tsx", "src/components/NavBar.tsx", "prisma/seed.js"  ],
   "exclude": ["node_modules"]
 }
