@@ -2,16 +2,47 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function SignInPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
 
-    // Later: send to your API route or NextAuth
-    console.log("Sign-in attempt:", { email, password });
+    // Try signing in
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
+
+    setLoading(false);
+
+    if (result?.error) {
+      setError("Invalid email or password");
+      return;
+    }
+
+    // Fetch session to read role
+    const sessionRes = await fetch("/api/auth/session");
+    const session = await sessionRes.json();
+
+    const role = session?.user?.role;
+
+    if (role === "admin") {
+      router.push("/admin");
+    } else {
+      router.push("/customer");
+    }
   };
 
   return (
@@ -66,19 +97,25 @@ export default function SignInPage() {
             />
           </div>
 
+          {/* Error message */}
+          {error && (
+            <p className="text-red-600 text-sm text-center">{error}</p>
+          )}
+
           {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white font-semibold py-2 rounded-md hover:bg-blue-700 transition"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white font-semibold py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
           >
-            Sign In
+            {loading ? "Signing in…" : "Sign In"}
           </button>
         </form>
 
         <p className="text-sm text-gray-600 text-center mt-4">
           Don’t have an account?{" "}
           <Link
-            href="/sign-up"
+            href="/signup"
             className="text-blue-600 font-medium hover:underline"
           >
             Sign Up

@@ -1,43 +1,40 @@
 import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
+import { prisma } from "@/lib/prisma";
+import { Product } from "@prisma/client";
 
-// Define a TypeScript interface for product objects
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-}
-
-export default function HomePage() {
-  // Temporary mock data – later this will come from Prisma + PostgreSQL
-  const products: Product[] = [
-    { id: 1, name: "Wireless Headphones", price: 199, image: "/images/headphones.jpg" },
-    { id: 2, name: "Smartwatch Pro", price: 299, image: "/images/smartwatch.jpg" },
-    { id: 3, name: "Gaming Laptop", price: 1299, image: "/images/laptop.jpg" },
-    { id: 4, name: "4K Monitor", price: 499, image: "/images/monitor.jpg" },
-  ];
+export default async function HomePage() {
+  // Fetch the latest 4 products from your database
+  const products: Product[] = await prisma.product.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 4,
+  });
 
   return (
     <div className="flex flex-col gap-16">
-      {/* HERO SECTION */}
-      <section className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-24 text-center rounded-2xl shadow-md">
-        <div className="container mx-auto px-6">
-          <h1 className="text-5xl font-extrabold mb-4">
-            Welcome to AWE Electronics
-          </h1>
-          <p className="text-lg mb-8 max-w-2xl mx-auto text-gray-200">
-            Discover the latest electronics and gadgets — delivered straight to your door.
-          </p>
-          <Link
-            href="/products"
-            className="bg-white text-blue-700 font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-100 transition"
-          >
-            Shop Now
-          </Link>
-        </div>
-      </section>
+
+      <section className="relative w-full h-[60vh] flex items-center justify-center rounded-2xl shadow-md overflow-hidden">
+          <img
+            src="/images/hero.jpg"
+            className="absolute inset-0 w-full h-full object-cover"
+            alt="Hero Background"
+          />
+
+          <div className="absolute inset-0 bg-black/50"></div>
+
+          <div className="relative z-10 text-white text-center px-6">
+            <h1 className="text-5xl font-extrabold mb-6 drop-shadow-lg">Welcome to AWE Electronics</h1>
+            <p className="text-lg mb-8 max-w-2xl mx-auto text-gray-200 drop-shadow">
+              Discover the latest electronics and gadgets...
+            </p>
+            <Link href="/products" className="inline-block bg-white text-blue-700 px-8 py-3 rounded-lg shadow">
+              Shop Now
+            </Link>
+          </div>
+        </section>
+
+      {/* CATEGORY SECTION */}
       <section className="container mx-auto px-4 mt-20">
         <h2 className="text-3xl font-bold text-center mb-10">Shop by Category</h2>
 
@@ -66,11 +63,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FEATURED PRODUCTS */}
+      {/* FEATURED PRODUCTS FROM DATABASE */}
       <section className="container mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-10">
           Featured Products
         </h2>
+
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
@@ -86,6 +84,7 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
       {/* WHY SHOP WITH US */}
       <section className="bg-white py-20 mt-20">
         <div className="container mx-auto px-4 text-center">
@@ -108,7 +107,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      { /* CALL TO ACTION */}
+      {/* CTA NEWSLETTER */}
       <section className="bg-blue-600 text-white text-center py-16 mt-20 rounded-xl">
         <h2 className="text-3xl font-bold mb-4">Join Our Tech Insider Newsletter</h2>
         <p className="mb-6 text-gray-200">
@@ -129,7 +128,6 @@ export default function HomePage() {
           </button>
         </form>
       </section>
-
     </div>
   );
 }
