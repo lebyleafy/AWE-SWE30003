@@ -42,8 +42,8 @@ export default async function HomePage() {
           {[
             { title: "Laptops", image: "/images/category-laptops.jpg" },
             { title: "Headphones", image: "/images/category-headphones.jpg" },
-            { title: "Smartwatches", image: "/images/category-smartwatch.jpg" },
-            { title: "Accessories", image: "/images/category-accessories.jpg" },
+            { title: "Smartwatches", image: "/images/category-smartwatches.jpg" },
+            { title: "Appliances", image: "/images/category-appliances.jpg" },
           ].map((cat) => (
             <a
               key={cat.title}
