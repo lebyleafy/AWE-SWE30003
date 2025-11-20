@@ -8,12 +8,15 @@ datasource db {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  name       String?
-  email      String   @unique
-  password   String
-  role       String   @default("user") // "admin" or "user"
-  createdAt  DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  name      String?
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+
+  carts  Cart[]
+  orders Order[]
 }
 
 model Product {
@@ -23,6 +26,47 @@ model Product {
   category    String
   description String?
   imageUrl    String
-  stock       Int       @default(0)
-  createdAt   DateTime  @default(now())
+  stock       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  cartId    Int
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  userId    Int
+  user      User        @relation(fields: [userId], references: [id])
+  total     Float
+  status    String      @default("pending")
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  price     Float
+  quantity  Int
 }

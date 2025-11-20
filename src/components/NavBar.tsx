@@ -122,9 +122,7 @@ export default function Navbar() {
           {/* Cart Icon */}
           <Link href="/cart" className="relative">
             <ShoppingCart className="w-6 h-6 text-gray-700 hover:text-blue-600 transition" />
-            <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-              0
-            </span>
+            {/* Optionally, add a badge for cart item count */}
           </Link>
 
           {/* Mobile Toggle */}

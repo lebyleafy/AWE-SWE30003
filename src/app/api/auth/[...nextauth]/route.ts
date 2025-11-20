@@ -1,42 +1,35 @@
+// src/app/api/auth/[...nextauth]/route.ts
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
-import type { JWT } from "next-auth/jwt";
-import type { Session } from "next-auth";
-import type { User } from "@prisma/client";
 
+// Export authOptions to reuse with getServerSession
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
 
   providers: [
     CredentialsProvider({
-      name: "credentials",
+      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-
-      async authorize(credentials): Promise<any> {
+      async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
-
         if (!user) return null;
 
-        const valid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
+        const valid = await bcrypt.compare(credentials.password, user.password);
         if (!valid) return null;
 
-        // never return password
+        // Return a plain object **with numeric id** (Prisma User.id is number)
         return {
-          id: user.id + "",
+          id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -50,30 +43,23 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    // --------------------------
-    // JWT Callback (fully typed)
-    // --------------------------
-    async jwt({ token, user }: any): Promise<JWT> {
+    async jwt({ token, user }) {
+      // when the user first logs in, user is set
       if (user) {
+        // token is a plain object in runtime; store id and role
+        token.id = (user as any).id;
         token.role = (user as any).role;
       }
       return token;
     },
 
-    // -----------------------------------
-    // Session Callback (fully typed)
-    // -----------------------------------
-    async session({
-      session,
-      token,
-    }: {
-      session: Session;
-      token: JWT;
-    }): Promise<Session> {
+    async session({ session, token }) {
       if (session.user) {
-        (session.user as any).role = token.role;
+        // attach id + role from token
+        // token.id might be number or string depending on provider; ensure number
+        session.user.id = token.id as unknown as number;
+        session.user.role = token.role as unknown as string;
       }
-
       return session;
     },
   },
