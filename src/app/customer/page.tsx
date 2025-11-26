@@ -21,7 +21,7 @@ export default async function CustomerDashboard() {
         <p className="text-gray-600 mb-10">Here’s your account overview.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          <DashboardCard title="My Orders" link="/orders" icon="📦" />
+          <DashboardCard title="My Orders" link="/customer/orders" icon="📦" />
           <DashboardCard title="My Cart" link="/cart" icon="🛒" />
           <DashboardCard title="Account Settings" link="/settings" icon="⚙️" />
           <DashboardCard title="Support" link="/support" icon="💬" />

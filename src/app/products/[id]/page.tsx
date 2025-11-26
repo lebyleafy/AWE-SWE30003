@@ -2,9 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import Link from "next/link";
+import Image from "next/image";
 
 export default async function ProductDetailPage({
   params,
@@ -66,28 +64,62 @@ export default async function ProductDetailPage({
               </button>
             </form>
           </div>
-        )}
+        </div>
+
+        {/* PRODUCT INFO */}
+        <div className="space-y-6">
+
+          {/* Category */}
+          <p className="text-blue-600 font-medium uppercase tracking-wide">
+            {product.category}
+          </p>
+
+          {/* Name */}
+          <h1 className="text-4xl font-bold text-gray-900">
+            {product.name}
+          </h1>
+
+          {/* Price */}
+          <p className="text-3xl font-semibold text-gray-800">
+            ${product.price.toFixed(2)}
+          </p>
+
+          {/* Stock */}
+          <div>
+            {product.stock > 0 ? (
+              <span className="text-green-600 font-medium">
+                In Stock ({product.stock} available)
+              </span>
+            ) : (
+              <span className="text-red-600 font-medium">Out of Stock</span>
+            )}
+          </div>
+
+          {/* Description */}
+          <p className="text-gray-600 leading-relaxed">
+            {product.description || "No product description available."}
+          </p>
+
+          {/* Add to Cart Button (UI only for now) */}
+          <button
+            className="bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-blue-700 transition mt-4 shadow"
+          >
+            Add to Cart
+          </button>
+        </div>
       </div>
 
-      <img
-        src={product.imageUrl || "/placeholder.jpg"}
-        alt={product.name}
-        className="w-full max-h-96 object-cover rounded-lg mb-6"
-      />
+      {/* Divider */}
+      <hr className="my-12" />
 
-      {product.description && (
-        <p className="text-gray-700 mb-4 whitespace-pre-wrap">
-          {product.description}
+      {/* Additional Section */}
+      <section>
+        <h2 className="text-2xl font-semibold mb-4">Product Details</h2>
+        <p className="text-gray-600 leading-relaxed">
+          {product.description ||
+            "This product is part of AWE Electronics premium catalog. More details will be available soon."}
         </p>
-      )}
-
-      <p className="text-2xl font-semibold mb-4">
-        ${Number(product.price).toFixed(2)}
-      </p>
-
-      {product.category && (
-        <p className="text-sm text-gray-500">Category: {product.category}</p>
-      )}
-    </div>
+      </section>
+    </main>
   );
 }
