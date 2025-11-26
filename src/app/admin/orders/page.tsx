@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function OrdersPage() {
   const session = await getServerSession(authOptions);
@@ -11,17 +12,12 @@ export default async function OrdersPage() {
     redirect("/");
   }
 
-  // Fetch all orders with their items and customer info
   const orders = await prisma.order.findMany({
     include: {
-      user: true, // to get customer info
-      items: {
-        include: { product: true },
-      },
+      user: true,
+      items: { include: { product: true } },
     },
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: { createdAt: "desc" },
   });
 
   return (
@@ -43,19 +39,39 @@ export default async function OrdersPage() {
 
           <tbody>
             {orders.map((order) => (
-              <tr key={order.id} className="border-b hover:bg-gray-50">
+              <tr key={order.id} className="border-b hover:bg-gray-50 transition">
                 <td className="p-3">{`ORD-${order.id}`}</td>
                 <td className="p-3">{order.user.name || order.user.email}</td>
                 <td className="p-3">${order.total.toFixed(2)}</td>
                 <td className="p-3">{order.status}</td>
                 <td className="p-3">{order.createdAt.toISOString().split("T")[0]}</td>
-                <td className="p-3">
-                  <a
+                <td className="p-3 flex items-center gap-2">
+                  <Link
                     href={`/admin/orders/${order.id}`}
                     className="text-blue-600 hover:underline"
                   >
                     View
-                  </a>
+                  </Link>
+
+                  {/* Delete form (server action only) */}
+                  <form
+                    action={async () => {
+                      "use server";
+
+                      // Delete order items first
+                      await prisma.orderItem.deleteMany({ where: { orderId: order.id } });
+
+                      // Delete the order
+                      await prisma.order.delete({ where: { id: order.id } });
+
+                      // Redirect to refresh orders list
+                      redirect("/admin/orders");
+                    }}
+                  >
+                    <button type="submit" className="text-red-600 hover:underline">
+                      Delete
+                    </button>
+                  </form>
                 </td>
               </tr>
             ))}
