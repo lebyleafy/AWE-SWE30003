@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { Product } from "@prisma/client";
 
 export default async function HomePage() {
