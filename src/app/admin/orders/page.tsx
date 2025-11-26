@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
 export default async function OrdersPage() {
@@ -10,23 +11,18 @@ export default async function OrdersPage() {
     redirect("/");
   }
 
-  // Mock orders — replace with DB later
-  const orders = [
-    {
-      id: "ORD-1001",
-      customer: "John Doe",
-      total: 248,
-      status: "Processing",
-      date: "2025-01-12"
+  // Fetch all orders with their items and customer info
+  const orders = await prisma.order.findMany({
+    include: {
+      user: true, // to get customer info
+      items: {
+        include: { product: true },
+      },
     },
-    {
-      id: "ORD-1002",
-      customer: "Sarah Lee",
-      total: 99,
-      status: "Shipped",
-      date: "2025-01-14"
+    orderBy: {
+      createdAt: "desc",
     },
-  ];
+  });
 
   return (
     <div className="min-h-screen bg-gray-100 p-10">
@@ -48,11 +44,11 @@ export default async function OrdersPage() {
           <tbody>
             {orders.map((order) => (
               <tr key={order.id} className="border-b hover:bg-gray-50">
-                <td className="p-3">{order.id}</td>
-                <td className="p-3">{order.customer}</td>
-                <td className="p-3">${order.total}</td>
+                <td className="p-3">{`ORD-${order.id}`}</td>
+                <td className="p-3">{order.user.name || order.user.email}</td>
+                <td className="p-3">${order.total.toFixed(2)}</td>
                 <td className="p-3">{order.status}</td>
-                <td className="p-3">{order.date}</td>
+                <td className="p-3">{order.createdAt.toISOString().split("T")[0]}</td>
                 <td className="p-3">
                   <a
                     href={`/admin/orders/${order.id}`}
@@ -65,7 +61,6 @@ export default async function OrdersPage() {
             ))}
           </tbody>
         </table>
-
       </div>
     </div>
   );

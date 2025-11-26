@@ -5,17 +5,28 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import CartItemControls from "@/app/cart/CardItemControls";
-import type { CartItem, Product } from "@prisma/client";
+import type { Product } from "@prisma/client";
 import CheckoutButton from "@/components/CheckoutButton";
 
+type CartItemWithProduct = {
+  id: number;
+  quantity: number;
+  cartId: number;
+  productId: number;
+  product: Product;
+};
 
 export default async function CartPage() {
   const session = await getServerSession(authOptions);
+
   if (!session || !session.user?.id) {
     redirect("/signin");
   }
 
   const userId = Number(session.user.id);
+  if (Number.isNaN(userId)) {
+    redirect("/signin");
+  }
 
   const cart = await prisma.cart.findFirst({
     where: { userId },
@@ -26,9 +37,12 @@ export default async function CartPage() {
     },
   });
 
-  const items = cart?.items ?? [];
+  const items: CartItemWithProduct[] = cart?.items ?? [];
 
-  const subtotal = items.reduce((s: number, it: CartItem & { product: Product }) => s + it.product.price * it.quantity, 0);
+  const subtotal = items.reduce(
+    (sum, it) => sum + it.product.price * it.quantity,
+    0
+  );
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-12">
@@ -41,10 +55,15 @@ export default async function CartPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
-            {items.map((it: CartItem & { product: Product }) => (
+            {items.map((it) => (
               <div key={it.id} className="flex gap-4 bg-white p-4 rounded shadow">
                 <div className="w-28 h-28 relative">
-                  <Image src={it.product.imageUrl} alt={it.product.name} fill className="object-cover rounded" />
+                  <Image
+                    src={it.product.imageUrl}
+                    alt={it.product.name}
+                    fill
+                    className="object-cover rounded"
+                  />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold">{it.product.name}</h3>
@@ -75,7 +94,6 @@ export default async function CartPage() {
 
             <CheckoutButton />
           </aside>
-
         </div>
       )}
     </main>
