@@ -38,43 +38,54 @@ export default async function OrdersPage() {
           </thead>
 
           <tbody>
-            {orders.map((order) => (
-              <tr key={order.id} className="border-b hover:bg-gray-50 transition">
-                <td className="p-3">{`ORD-${order.id}`}</td>
-                <td className="p-3">{order.user.name || order.user.email}</td>
-                <td className="p-3">${order.total.toFixed(2)}</td>
-                <td className="p-3">{order.status}</td>
-                <td className="p-3">{order.createdAt.toISOString().split("T")[0]}</td>
-                <td className="p-3 flex items-center gap-2">
-                  <Link
-                    href={`/admin/orders/${order.id}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    View
-                  </Link>
+            {orders.map((order) => {
+              // Calculate total dynamically
+              const total = order.items.reduce(
+                (sum, item) => sum + item.price * item.quantity,
+                0
+              );
 
-                  {/* Delete form (server action only) */}
-                  <form
-                    action={async () => {
-                      "use server";
+              return (
+                <tr
+                  key={order.id}
+                  className="border-b hover:bg-gray-50 transition"
+                >
+                  <td className="p-3">{`ORD-${order.id}`}</td>
+                  <td className="p-3">{order.user.name || order.user.email}</td>
+                  <td className="p-3">${total.toFixed(2)}</td>
+                  <td className="p-3">{order.status}</td>
+                  <td className="p-3">
+                    {order.createdAt.toISOString().split("T")[0]}
+                  </td>
+                  <td className="p-3 flex items-center gap-2">
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      View
+                    </Link>
 
-                      // Delete order items first
-                      await prisma.orderItem.deleteMany({ where: { orderId: order.id } });
-
-                      // Delete the order
-                      await prisma.order.delete({ where: { id: order.id } });
-
-                      // Redirect to refresh orders list
-                      redirect("/admin/orders");
-                    }}
-                  >
-                    <button type="submit" className="text-red-600 hover:underline">
-                      Delete
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            ))}
+                    <form
+                      action={async () => {
+                        "use server";
+                        await prisma.orderItem.deleteMany({
+                          where: { orderId: order.id },
+                        });
+                        await prisma.order.delete({ where: { id: order.id } });
+                        redirect("/admin/orders");
+                      }}
+                    >
+                      <button
+                        type="submit"
+                        className="text-red-600 hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
